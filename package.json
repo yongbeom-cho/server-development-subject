@@ -1,0 +1,22 @@
+{
+  "name": "subject",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yongbeom-cho/server-development-subject.git"
+  },
+  "author": "yongbeom_cho",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yongbeom-cho/server-development-subject/issues"
+  },
+  "homepage": "https://github.com/yongbeom-cho/server-development-subject#readme",
+  "dependencies": {
+    "express.js": "^1.0.0"
+  }
+}
