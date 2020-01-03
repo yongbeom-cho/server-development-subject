@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>로그 뷰</title>
+    </head>
+<body>
+    <h1>로그 뷰</h1>
+    <br>
+    <form method="post" action="/log/search">
+        <table>
+            <tr>
+                <td><input type="text" placeholder="검색할 내용" name="search_content" /></td>
+                <td><input type="submit" value="로그 검색" name=""/></td>
+            </tr>
+        </table>
+    </form>
+    <br>
+    <% for(var i = 0; i < logs.length; i++) { %>
+    		<li><%=JSON.stringify(logs[i])%></li>
+    <% } %>
+    
+    <br>
+    <br>
+    <a href='/'>로그인 페이지로 돌아가기</a>
+</body>
+</html>

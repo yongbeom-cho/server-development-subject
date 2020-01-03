@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <meta charset="utf-8" />
+  </head>
+  <body>
+ 
+    <!-- 로그폼 -->
+    <form action="/log" method="get">
+      <input value="로그" type="submit" />
+    </form>
+    
+    <!-- 사용자 정보폼 -->
+    <form action="/userinfo" method="get">
+      <input value="사용자 정보" type="submit" />
+    </form>
+    
+    <% if (userinfo != null) {%>
+    	<li>id : <%= userinfo.id %></li>
+    	<li>app_user_id : <%= userinfo.app_user_id %></li>
+    	<li>nickname : <%= userinfo.nickname %></li>
+    	<li>access_token : <%= userinfo.access_token %></li>
+    	<li>refresh_token : <%= userinfo.refresh_token %></li>
+    	<li>created_at : <%= userinfo.created_at %></li>
+    <%}%>
+    
+    <!-- 로그아웃폼 -->
+    <form action="/logout" method="post">
+      <input value="로그아웃" type="submit" />
+    </form>
+    
+    <!-- 탈퇴하기폼 -->
+    <form action="/leave" method="post">
+      <input value="탈퇴하기" type="submit" />
+    </form>
+ 
+  </body>
+</html>

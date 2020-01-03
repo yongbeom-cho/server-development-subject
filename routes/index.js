@@ -1,40 +1,61 @@
-var util = require('../middleware/utilities'),
-        config = require('../config');
+const express = require('express');
+const sequelize = require('../models').sequelize;
+const sql = require('../sql');
+const router = express.Router();
 
-module.exports.loginPage = loginPage;
-module.exports.login = login;
-module.exports.mainPage = mainPage;
-module.exports.queryUserInfo = queryUserInfo;
-module.exports.leave = leave;
-module.exports.logOut = logOut;
+router.get('/', (req, res) => {
+	console.log("root");
+	res.render('index');
+});
 
-function loginPage(req, res) {
-        res.render('login', {title: 'Login', message: req.flash('error')});
-};
+//카카오 서버와 연동.
+router.post('/login', (req, res) => {
+	console.log("login");
+	res.render('mainpage', {title: 'Express', userinfo: null});
+});
 
-function login(req, res) {
-        var isAuth = util.auth(req.body.username, req.body.password, req.session);
-        if (isAuth) {
-                res.redirect('/chat');
-        } else {
-                req.flash('error', 'Wrong Username or Password');
-                res.redirect(config.routes.login);
-        }
-};
+router.get('/userinfo', (req, res) => {
+	console.log("userinfo");
+	//sql.getUserInfo
+	var userinfo = {id : 0, app_user_id : 1, nickname : "kkk", access_token : "asdf1234", refresh_token : "aaaa1111", created_at : "20200103"};
+	res.render('mainpage', {title: 'Express', userinfo: userinfo});
+});
 
-function mainPage(req, res) {
+router.post('/logout', (req, res) => {
+	console.log("logout");
+	res.redirect('/');
+	//TODO : webbrowser 닫기
+});
 
-};
+router.post('/leave', (req, res) => {
+	console.log("leave");
+	res.redirect('/');
+});
 
-function queryUserInfo(req, res) {
+router.get('/log', (req, res) => {
+	console.log("log");
+	/* TODO
+		const logs = await sql.getAllLogs();
+		res.render('logview', {logs: logs});
+	*/
+	var logs = [];
+	for (var i = 0; i < 5; i++) {
+		const log = {is_req : true, header : "헤더"+i, body : "바디"+i};
+		logs.push(log);
+	}
+	res.render('logview', {logs: logs});
+});
 
-};
+router.post('/log/search', async (req, res) => {
+	 var paramSearchContent = req.body.search_content || req.query.search_content;
+	console.log("log search : " + paramSearchContent);
+	if (paramSearchContent === undefined) {
+		const logs = await sql.getAllLogs();
+		res.render('logview', {logs: logs});
+	} else {
+		const logs = await sql.getLogs(paramSearchContent);
+		res.render('logview', {logs: logs});
+	}
+});
 
-function leave(req, res) {
-
-};
-
-function logOut(req, res){
-        util.logOut(req.session);
-        res.redirect('/');
-};
+module.exports = router;
