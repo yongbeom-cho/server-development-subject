@@ -11,7 +11,7 @@ const apiRouter = require('./routes/api');
 const sequelize = require('./models').sequelize;
 
 var app = express();
-
+/*TODO : session 추가하기 !!!! */
 sequelize.sync().then(() => {
 	console.log("DB 연결 성공");
 }).catch(err => {

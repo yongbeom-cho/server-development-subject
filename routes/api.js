@@ -16,7 +16,6 @@ router.get('/api/user/:app_user_id', async (req, res) => {
 
 
 
-
 //PUT /api/user/{appUserId}, 데이터베이스에 저장된 nickname만 변경
 /*
 $.ajax({

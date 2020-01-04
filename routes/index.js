@@ -1,35 +1,100 @@
 const express = require('express');
 const sequelize = require('../models').sequelize;
 const sql = require('../sql');
+const request = require("request");
 const router = express.Router();
+const { RESTAPI_KEY } = process.env;
 
 router.get('/', (req, res) => {
-	console.log("root");
-	res.render('index');
+	const link = "https://kauth.kakao.com/oauth/authorize?client_id="+RESTAPI_KEY+"&redirect_uri=http://localhost:8080/callback&response_type=code";
+	console.log("root, link : " + link);
+	res.render('index', { link : link });
 });
 
-//카카오 서버와 연동.
-router.post('/login', (req, res) => {
-	console.log("login");
-	res.render('mainpage', {title: 'Express', userinfo: null});
+router.get('/callback', (req, res) => {
+	const { code } = req.query;
+	console.log("callback, code : " + code);
+	const options = {
+        grant_type: "authorization_code",
+        client_id: RESTAPI_KEY,
+        redirect_uri: "http://localhost:8080/callback",
+        code: code
+  };
+	
+	request.post("https://kauth.kakao.com/oauth/token", { form : options }, (error, response, body) => {
+		const json_body = JSON.parse(body);
+		const access_token = json_body.access_token;
+		const refresh_token = json_body.refresh_token;
+		console.log("access token : " + access_token);
+		
+		const me_options = {
+			url: 'https://kapi.kakao.com/v2/user/me',
+			headers: {
+				'Authorization': " Bearer " + access_token,
+				'content-type': 'application/x-www-form-urlencoded',
+			}
+		};
+		request.get(me_options, async (error, response, body) => {
+			console.log("v2/user/me 정보 ");
+			console.log(body);
+			const user_info = JSON.parse(body);
+			const app_user_id = user_info.id;
+			const nickname = user_info.properties.nickname;
+			try {
+				await sql.createUserInfo(app_user_id, nickname, access_token, refresh_token);
+				const userinfo = await sql.getUserInfo(app_user_id);
+				res.render('mainpage', {title: 'Express', userinfo: userinfo});
+			} catch (error) {
+				console.log("createUserInfo or getUserInfo Failed");
+				res.redirect('/');
+			}
+		});
+  });
 });
 
-router.get('/userinfo', (req, res) => {
-	console.log("userinfo");
-	//sql.getUserInfo
-	var userinfo = {id : 0, app_user_id : 1, nickname : "kkk", access_token : "asdf1234", refresh_token : "aaaa1111", created_at : "20200103"};
-	res.render('mainpage', {title: 'Express', userinfo: userinfo});
+//탈퇴하기
+router.post('/leave', (req, res) => {
+	console.log("leave");
+	var access_token = req.body.access_token || req.query.access_token;
+	const options = {
+		url: 'https://kapi.kakao.com/v1/user/unlink',
+		headers: {
+			'Authorization': " Bearer " + access_token,
+			'content-type': 'application/x-www-form-urlencoded',
+		}
+	};
+	request.post(options, async (error, response, body) => {
+		console.log("v1/user/unlink 정보 ");
+		console.log(body);
+		const app_user_id = body.id;
+		
+		try {
+			await sql.deleteUserInfo(app_user_id);
+			console.log("deleteUserInfo Success, app_user_id : "+app_user_id);
+		} catch (error) {
+			console.log("deleteUserInfo Failed, app_user_id : "+app_user_id);
+		}
+		res.redirect('/');
+	});
 });
 
 router.post('/logout', (req, res) => {
 	console.log("logout");
-	res.redirect('/');
-	//TODO : webbrowser 닫기
-});
-
-router.post('/leave', (req, res) => {
-	console.log("leave");
-	res.redirect('/');
+	var access_token = req.body.access_token || req.query.access_token;
+	const options = {
+		url: 'https://kapi.kakao.com/v1/user/logout',
+		headers: {
+			'Authorization': " Bearer " + access_token,
+			'content-type': 'application/x-www-form-urlencoded',
+		}
+	};
+	request.post(options, async (error, response, body) => {
+		console.log("v1/user/logout 정보 ");
+		console.log(body);
+		const app_user_id = body.id;
+		//TODO : logout 이후 다시 login하면??
+		res.redirect('/');
+	});
 });
 
 router.get('/log', (req, res) => {
@@ -59,3 +124,13 @@ router.post('/log/search', async (req, res) => {
 });
 
 module.exports = router;
+
+
+/*
+router.get('/userinfo', (req, res) => {
+	console.log("userinfo");
+	const { app_user_id } = req.query;
+	const userinfo = sql.getUserInfo(app_user_id);	
+	res.render('mainpage', {title: 'Express', userinfo: userinfo});
+});
+*/
