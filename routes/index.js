@@ -7,8 +7,10 @@ const { RESTAPI_KEY } = process.env;
 
 router.get('/', (req, res) => {
 	const link = "https://kauth.kakao.com/oauth/authorize?client_id="+RESTAPI_KEY+"&redirect_uri=http://localhost:8080/callback&response_type=code";
-	console.log("root, link : " + link);
 	res.render('index', { link : link });
+	console.log("************ req ***************");
+	console.log(req.rawHeaders);
+	console.log(req.body);
 });
 
 router.get('/callback', (req, res) => {
@@ -41,9 +43,9 @@ router.get('/callback', (req, res) => {
 			const app_user_id = user_info.id;
 			const nickname = user_info.properties.nickname;
 			try {
-				await sql.createUserInfo(app_user_id, nickname, access_token, refresh_token);
+				await sql.mergeUserInfo(app_user_id, nickname, access_token, refresh_token);
 				const userinfo = await sql.getUserInfo(app_user_id);
-				res.render('mainpage', {title: 'Express', userinfo: userinfo});
+				res.render('mainpage', {userinfo: userinfo});
 			} catch (error) {
 				console.log("createUserInfo or getUserInfo Failed");
 				res.redirect('/');
@@ -66,7 +68,8 @@ router.post('/leave', (req, res) => {
 	request.post(options, async (error, response, body) => {
 		console.log("v1/user/unlink 정보 ");
 		console.log(body);
-		const app_user_id = body.id;
+		const json_body = JSON.parse(body);
+		const app_user_id = json_body.id;
 		
 		try {
 			await sql.deleteUserInfo(app_user_id);
@@ -92,27 +95,18 @@ router.post('/logout', (req, res) => {
 		console.log("v1/user/logout 정보 ");
 		console.log(body);
 		const app_user_id = body.id;
-		//TODO : logout 이후 다시 login하면??
-		res.redirect('/');
+		res.render('close', {close: true});
 	});
 });
 
-router.get('/log', (req, res) => {
+router.get('/log', async (req, res) => {
 	console.log("log");
-	/* TODO
-		const logs = await sql.getAllLogs();
-		res.render('logview', {logs: logs});
-	*/
-	var logs = [];
-	for (var i = 0; i < 5; i++) {
-		const log = {is_req : true, header : "헤더"+i, body : "바디"+i};
-		logs.push(log);
-	}
+	const logs = await sql.getAllLogs();
 	res.render('logview', {logs: logs});
 });
 
 router.post('/log/search', async (req, res) => {
-	 var paramSearchContent = req.body.search_content || req.query.search_content;
+	var paramSearchContent = req.body.search_content || req.query.search_content;
 	console.log("log search : " + paramSearchContent);
 	if (paramSearchContent === undefined) {
 		const logs = await sql.getAllLogs();
@@ -131,6 +125,6 @@ router.get('/userinfo', (req, res) => {
 	console.log("userinfo");
 	const { app_user_id } = req.query;
 	const userinfo = sql.getUserInfo(app_user_id);	
-	res.render('mainpage', {title: 'Express', userinfo: userinfo});
+	res.render('mainpage', {userinfo: userinfo});
 });
 */

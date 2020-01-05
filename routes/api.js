@@ -14,24 +14,6 @@ router.get('/api/user/:app_user_id', async (req, res) => {
 	res.json(userinfo);
 });
 
-
-
-//PUT /api/user/{appUserId}, 데이터베이스에 저장된 nickname만 변경
-/*
-$.ajax({
-    url : 'http://localhost:8000/test',
-    method : 'post',
-    data : {
-        nickname : 'test'
-    },
-    success : function (data) {
-        console.log(data);
-    },
-    error : function (err) {
-        console.log(err.toString());
-    }
-});
-*/
 router.put('/api/user/:app_user_id', (req, res) => {
 	var result;
 	const app_user_id = req.params.app_user_id;
@@ -49,8 +31,6 @@ router.put('/api/user/:app_user_id', (req, res) => {
 	})
 });
 
-
-
 //DELETE /api/user/{appUserId}
 router.delete('/api/user/:app_user_id', (req, res) => {
 	var result;
@@ -67,9 +47,6 @@ router.delete('/api/user/:app_user_id', (req, res) => {
 		res.json(result);
 	})
 });
-
-
-
 
 router.get('/api/users', async (req, res) => {
 	const nickname = req.query.nickname;

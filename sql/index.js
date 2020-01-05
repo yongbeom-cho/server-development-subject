@@ -3,7 +3,7 @@ const Op = require('../models').Sequelize.Op;
 const { UserInfo, Log }= require('../models');
 
 function createUserInfo(app_user_id, nickname, access_token, refresh_token) {
-	return sequelize.transaction().then(async tx => {
+	return sequelize.transaction().then(tx => {
 			 console.log('createUserInfo');
 			 return UserInfo.create({
 				 app_user_id,
@@ -23,14 +23,43 @@ function createUserInfo(app_user_id, nickname, access_token, refresh_token) {
 		});
 };
 
-function createLog(is_req, header, body) {
+function updateUserInfo(app_user_id, nickname, access_token, refresh_token) {
+	console.log('updateUserInfo');
+	return sequelize.transaction().then(tx => {
+		return UserInfo.update({nickname: nickname, access_token: access_token, refresh_token: refresh_token}, {where: {app_user_id: app_user_id}, transaction: tx})
+			.then(async (updatedRowCount) => {
+			console.log("updateRowCount : " + updatedRowCount);
+			tx.commit();
+		}).catch(error => {
+			console.log("promise inside catch = " + error);
+			tx.rollback();
+			reject(error);
+		});
+	});
+};
+
+function mergeUserInfo(app_user_id, nickname, access_token, refresh_token) {
+	return UserInfo.findOne({ where: { app_user_id : app_user_id} })
+	.then(obj => {
+		if (obj) {
+			return updateUserInfo(app_user_id, nickname, access_token, refresh_token);
+		} else {
+			return createUserInfo(app_user_id, nickname, access_token, refresh_token);
+		}
+	})
+	.catch(error => {
+		reject(error);
+	});
+};
+
+function createLog(type, header, body) {
 	console.log('createLog');
-	return sequelize.transaction().then(async tx => {	
+	return sequelize.transaction().then(tx => {	
 		return Log.create({
-			is_req,
+			type,
 			header,
 			body,}, {transaction: tx})
-		.then(async result => {
+		.then(result => {
 			tx.commit();
 		}).catch(err => {
 			tx.rollback();
@@ -42,9 +71,9 @@ function createLog(is_req, header, body) {
 
 function modifyNickname(app_user_id, new_nickname) {
 	console.log('modifyNickname');
-	return sequelize.transaction().then(async tx => {
-		return RoomCoinInfo.update({nickname: new_nickname}, {where: {app_user_id: app_user_id}, transaction: tx})
-			.then(async (updatedRowCount) => {
+	return sequelize.transaction().then(tx => {
+		return UserInfo.update({nickname: new_nickname}, {where: {app_user_id: app_user_id}, transaction: tx})
+			.then((updatedRowCount) => {
 			console.log("updateRowCount : " + updatedRowCount);
 			tx.commit();
 		}).catch(error => {
@@ -57,7 +86,7 @@ function modifyNickname(app_user_id, new_nickname) {
 
 function deleteUserInfo(app_user_id) {
 	console.log('deleteUserInfo');
-	sequelize.transaction().then(async tx => {
+	sequelize.transaction().then(tx => {
 		return UserInfo.destroy({
 			where: {
 				app_user_id: app_user_id
@@ -155,6 +184,7 @@ async function getLogs(search_content) {
 }
 
 exports.createUserInfo = createUserInfo;
+exports.mergeUserInfo = mergeUserInfo;
 exports.createLog = createLog;
 exports.modifyNickname = modifyNickname;
 exports.deleteUserInfo = deleteUserInfo;

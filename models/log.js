@@ -1,8 +1,8 @@
 module.exports = (sequelize, DataTypes) => (
 	sequelize.define('log', 
 	{
-		is_req: {
-			type: DataTypes.TINYINT,
+		type: {
+			type: DataTypes.STRING,
 			allowNull: false,
 			unique: false,
 		},

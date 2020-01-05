@@ -16,10 +16,11 @@
         </table>
     </form>
     <br>
-    <% for(var i = 0; i < logs.length; i++) { %>
-    		<li><%=JSON.stringify(logs[i])%></li>
-    <% } %>
-    
+			<% if (logs != null) {%>
+				<% for(var i = 0; i < logs.length; i++) { %>
+						<li><%=JSON.stringify(logs[i])%></li>
+				<% } %>
+    	<%}%>   
     <br>
     <br>
     <a href='/'>로그인 페이지로 돌아가기</a>
