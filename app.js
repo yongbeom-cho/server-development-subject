@@ -4,7 +4,8 @@ var path = require('path');
 require('dotenv').config();
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var logger = require('morgan');
+//var logger = require('morgan');
+var logger = require('./middleware/logger');
 
 const indexRouter = require('./routes');
 const apiRouter = require('./routes/api');
@@ -26,13 +27,21 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
-app.use(logger('dev'));
+//app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  logger.log(req, res, next);
+});
+
+app.use(logger.endMiddleware);
+
 app.use('/', indexRouter);
 app.use('/api', apiRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

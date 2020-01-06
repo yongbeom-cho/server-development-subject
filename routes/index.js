@@ -8,9 +8,6 @@ const { RESTAPI_KEY } = process.env;
 router.get('/', (req, res) => {
 	const link = "https://kauth.kakao.com/oauth/authorize?client_id="+RESTAPI_KEY+"&redirect_uri=http://localhost:8080/callback&response_type=code";
 	res.render('index', { link : link });
-	console.log("************ req ***************");
-	console.log(req.rawHeaders);
-	console.log(req.body);
 });
 
 router.get('/callback', (req, res) => {
