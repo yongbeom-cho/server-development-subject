@@ -46,8 +46,6 @@ function log(req, res, next) {
 	next();
 };
 
-
-
 const endMiddleware = (req, res, next) => {
   const defaultWrite = res.write;
   const defaultEnd = res.end;
@@ -57,8 +55,6 @@ const endMiddleware = (req, res, next) => {
     chunks.push(new Buffer(restArgs[0]));
     defaultWrite.apply(res, restArgs);
   };
-	
-	res.render = 
 
   res.end = (...restArgs) => {
     if (restArgs[0]) {
