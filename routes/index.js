@@ -4,9 +4,9 @@ const sql = require('../sql');
 const request = require("request");
 const router = express.Router();
 const { RESTAPI_KEY } = process.env;
+const link = "https://kauth.kakao.com/oauth/authorize?client_id="+RESTAPI_KEY+"&redirect_uri=http://localhost:8080/callback&response_type=code";
 
 router.get('/', (req, res) => {
-	const link = "https://kauth.kakao.com/oauth/authorize?client_id="+RESTAPI_KEY+"&redirect_uri=http://localhost:8080/callback&response_type=code";
 	res.render('index', { link : link }, function(err, html) {
 		res.end(html);
 	});
@@ -44,10 +44,14 @@ router.get('/callback', (req, res) => {
 			try {
 				await sql.mergeUserInfo(app_user_id, nickname, access_token, refresh_token);
 				const userinfo = await sql.getUserInfo(app_user_id);
-				res.render('mainpage', {userinfo: userinfo});
+				res.render('mainpage', {userinfo: userinfo}, function(err, html) {
+                    res.end(html);
+                });
 			} catch (error) {
 				console.log("createUserInfo or getUserInfo Failed");
-				res.redirect('/');
+				res.render('index', { link : link }, function(err, html) {
+                    res.end(html);
+                });
 			}
 		});
   });
@@ -94,14 +98,18 @@ router.post('/logout', (req, res) => {
 		console.log("v1/user/logout 정보 ");
 		console.log(body);
 		const app_user_id = body.id;
-		res.render('close', {close: true});
+		res.render('close', {close: true}, function(err, html) {
+            res.end(html);
+        });
 	});
 });
 
 router.get('/log', async (req, res) => {
 	console.log("log");
 	const logs = await sql.getAllLogs();
-	res.render('logview', {logs: logs});
+	res.render('logview', {logs: logs}, function(err, html) {
+        res.end(html);
+    });
 });
 
 router.post('/log/search', async (req, res) => {
@@ -109,10 +117,14 @@ router.post('/log/search', async (req, res) => {
 	console.log("log search : " + paramSearchContent);
 	if (paramSearchContent === undefined) {
 		const logs = await sql.getAllLogs();
-		res.render('logview', {logs: logs});
+		res.render('logview', {logs: logs}, function(err, html) {
+            res.end(html);
+        });
 	} else {
 		const logs = await sql.getLogs(paramSearchContent);
-		res.render('logview', {logs: logs});
+		res.render('logview', {logs: logs}, function(err, html) {
+            res.end(html);
+        });
 	}
 });
 

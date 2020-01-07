@@ -2,166 +2,168 @@ const sequelize = require('../models').sequelize;
 const Op = require('../models').Sequelize.Op;
 const { UserInfo, Log }= require('../models');
 
-function createUserInfo(app_user_id, nickname, access_token, refresh_token) {
-	return sequelize.transaction().then(tx => {
-			 console.log('createUserInfo');
-			 return UserInfo.create({
-				 app_user_id,
-				 nickname,
-				 access_token,
-				 refresh_token,}, 
-				{transaction: tx})
-		 .then(async result => {
-				 tx.commit();
-				 console.log('CreateUserInfo Committed');
-		 }).catch(err => {
-				 tx.rollback();
-				 console.log('CreateUserInfo Rollbacked');
-				 console.log(err);
-				 reject(err);
-		 });
-		});
+async function createUserInfo(app_user_id, nickname, access_token, refresh_token) {
+    console.log('createUserInfo');
+    let tx;
+    try {
+        tx = await sequelize.transaction();
+        await UserInfo.create({app_user_id, nickname, access_token, refresh_token}, {transaction: tx});
+        await tx.commit();
+        return true;
+    } catch (err) {
+        if (tx) await tx.rollback();
+        console.log('createUserInfo error : ' + err);
+        return false;
+    }
 };
 
-function updateUserInfo(app_user_id, nickname, access_token, refresh_token) {
-	console.log('updateUserInfo');
-	return sequelize.transaction().then(tx => {
-		return UserInfo.update({nickname: nickname, access_token: access_token, refresh_token: refresh_token}, {where: {app_user_id: app_user_id}, transaction: tx})
-			.then(async (updatedRowCount) => {
-			console.log("updateRowCount : " + updatedRowCount);
-			tx.commit();
-		}).catch(error => {
-			console.log("promise inside catch = " + error);
-			tx.rollback();
-			reject(error);
-		});
-	});
+async function updateUserInfo(app_user_id, nickname, access_token, refresh_token) {
+    console.log('updateUserInfo');
+    let tx;
+    try {
+        tx = await sequelize.transaction();
+        const updateRowCount = await UserInfo.update({nickname: nickname, access_token: access_token, refresh_token: refresh_token}, {where: {app_user_id: app_user_id}, transaction: tx});
+        console.log("updateRowCount : " + updateRowCount);
+        await tx.commit();
+        return true;
+    } catch (err) {
+        if (tx) await tx.rollback();
+        console.log('updateUserInfo error : ' +err);
+        return false;
+    }
 };
 
-function mergeUserInfo(app_user_id, nickname, access_token, refresh_token) {
-	return UserInfo.findOne({ where: { app_user_id : app_user_id} })
-	.then(obj => {
-		if (obj) {
-			return updateUserInfo(app_user_id, nickname, access_token, refresh_token);
-		} else {
-			return createUserInfo(app_user_id, nickname, access_token, refresh_token);
-		}
-	})
-	.catch(error => {
-		reject(error);
-	});
+async function mergeUserInfo(app_user_id, nickname, access_token, refresh_token) {
+    console.log('mergeUserInfo');
+    try {
+        const obj = await UserInfo.findOne({ where: { app_user_id : app_user_id} });
+        if (obj) {
+            return await updateUserInfo(app_user_id, nickname, access_token, refresh_token);
+        } else {
+            return await createUserInfo(app_user_id, nickname, access_token, refresh_token);
+        }
+    } catch (err) {
+        console.log('mergeUserInfo error : ' + err);
+        return false;
+    }
 };
 
-function createLog(type, header, body) {
-	console.log('createLog');
-	return sequelize.transaction().then(tx => {	
-		return Log.create({
-			type,
-			header,
-			body,}, {transaction: tx})
-		.then(result => {
-			tx.commit();
-		}).catch(err => {
-			tx.rollback();
-			console.log(err);
-			reject(err);
-		});
-	});
+async function createLog(type, header, body) {
+    console.log('createLog');
+    let tx;
+    try {
+        tx = await sequelize.transaction();
+        await Log.create({type, header, body}, {transaction: tx});
+        await tx.commit();
+        return true;
+    } catch (err) {
+        if (tx) await tx.rollback();
+        console.log('createLog error : ' + err);
+        return false;
+    }
 };
 
-function modifyNickname(app_user_id, new_nickname) {
-	console.log('modifyNickname');
-	return sequelize.transaction().then(tx => {
-		return UserInfo.update({nickname: new_nickname}, {where: {app_user_id: app_user_id}, transaction: tx})
-			.then((updatedRowCount) => {
-			console.log("updateRowCount : " + updatedRowCount);
-			tx.commit();
-		}).catch(error => {
-			console.log("promise inside catch = " + error);
-			tx.rollback();
-			reject(error);
-		});
-	});
+async function modifyNickname(app_user_id, new_nickname) {
+    console.log('modifyNickname');
+    let tx;
+    try {
+        tx = await sequelize.transaction();
+        const updateRowCount = await UserInfo.update({nickname: new_nickname}, {where: {app_user_id: app_user_id}, transaction: tx});
+        console.log("updateRowCount : " + updateRowCount);
+        await tx.commit();
+        return true;
+    } catch (err) {
+        if (tx) await tx.rollback();
+        console.log('modifyNickname error : ' + err);
+        return false;
+    }
 };
 
-function deleteUserInfo(app_user_id) {
-	console.log('deleteUserInfo');
-	sequelize.transaction().then(tx => {
-		return UserInfo.destroy({
-			where: {
-				app_user_id: app_user_id
-			}
-		}).then((deletedRowCount) => { // rowDeleted will return number of rows deleted
-			tx.commit();
-			if (deletedRowCount === 1) {
-				console.log('Deleted successfully');			 
-			} else {
-				console.log('Deleted more than one');
-			}
-		}).catch(err => {
-			tx.rollback();
-			console.log(err);
-			reject(err);
-		});
-	});
+async function deleteUserInfo(app_user_id) {
+    console.log('deleteUserInfo');
+    let tx;
+    try {
+        tx = await sequelize.transaction();
+        const deletedRowCount = await UserInfo.destroy({where: {app_user_id: app_user_id}});
+        console.log("deletedRowCount : " + deletedRowCount);
+        await tx.commit();
+        return true;
+    } catch (err) {
+        if (tx) await tx.rollback();
+        console.log('deleteUserInfo error : ' + err);
+        return false;
+    }
 };
 
 async function getUserInfo(app_user_id) {
-  var id, nickname, access_token, refresh_token, created_at;
-  try {
-     const userInfo= await UserInfo.findOne({ where: { app_user_id : app_user_id} });
-		 console.log('getUserInfo userInfo : ' + userInfo);
-     id = userInfo.dataValues.id;
-     nickname = userInfo.dataValues.nickname;
-     access_token = userInfo.dataValues.access_token;
-     refresh_token = userInfo.dataValues.refresh_token;
-     created_at = userInfo.dataValues.created_at;
-     var info = {id : id, app_user_id : app_user_id, nickname : nickname, access_token : access_token, refresh_token : refresh_token, created_at : created_at};
-     return info;
-  } catch (error) {
-   console.error(error);
-   return null;
- }
+    var id, nickname, access_token, refresh_token, created_at;
+    try {
+        const userInfo= await UserInfo.findOne({ where: { app_user_id : app_user_id} });
+        if (userInfo) {
+            console.log('getUserInfo userInfo count : 1');
+        } else {
+            console.log('getUserInfo userInfo count : 0');
+        }
+        id = userInfo.dataValues.id;
+        nickname = userInfo.dataValues.nickname;
+        access_token = userInfo.dataValues.access_token;
+        refresh_token = userInfo.dataValues.refresh_token;
+        created_at = userInfo.dataValues.created_at;
+        var info = {id : id, app_user_id : app_user_id, nickname : nickname, access_token : access_token, refresh_token : refresh_token, created_at : created_at};
+        return info;
+    } catch (error) {
+        console.error('getUserInfo error : ' + error);
+        return null;
+    }
 };
 
 async function getUsers() {
-  try {
-		const users= await UserInfo.findAll();
-		console.log('getUsers users : ' + users);
-		return users;
-  } catch (error) {
-		console.error(error);
-		return null;
-	}
+    console.log('getUsers');
+    try {
+        const users= await UserInfo.findAll();
+        console.log('getUsers users count : ' + users.length);
+        return users;
+    } catch (error) {
+        console.error('getUsers error : ' + error);
+        return null;
+    }
 }
 
 async function getUserInfosFromNickname(nickname) {
-  try {
-		const users= await UserInfo.findAll({ where: { nickname : nickname} });
-		console.log('getUserInfosFromNickname users : ' + users);
-		return users;
-  } catch (error) {
-		console.error(error);
-		return null;
-	}
+    console.log('getUserInfosFromNickname');
+    try {
+        const users= await UserInfo.findAll({ where: { nickname : nickname} });
+        console.log('getUserInfosFromNickname user count : ' + users.length);
+        return users;
+    } catch (error) {
+        console.error('getUserInfosFromNickname error : ' + error);
+        return null;
+    }
 }
 
 async function getAllLogs() {
+    console.log('getAllLogs');
 	try {
-		const logs = await Log.findAll();
-		console.log('getLogs logs : ' + JSON.stringify(logs));
-		return logs;
-  } catch (error) {
-		console.error(error);
-		return null;
-	}
+        const logs = await Log.findAll();
+        console.log('getAllLogs count : ' + logs.length);
+        return logs;
+    } catch (error) {
+        console.error('getAllLogs error : ' + error);
+        return null;
+    }
 }
 
 async function getLogs(search_content) {
-	try {
+    console.log('getLogs');
+    try {
 		const logs = await Log.findAll({
 			where:{
 				[Op.or]: [
+                    {
+						type: {
+							[Op.like]: "%" + search_content + "%"
+						}
+					},
 					{
 						header: {
 							[Op.like]: "%" + search_content + "%"
@@ -175,15 +177,14 @@ async function getLogs(search_content) {
 				]
 			}
 		});
-		console.log('getLogs logs : ' + JSON.stringify(logs));
+        console.log('getLogs count : ' + logs.length);
 		return logs;
 	} catch (error) {
-		console.error(error);
+		console.error('getLogs error : ' + error);
 		return null;
 	}
 }
 
-exports.createUserInfo = createUserInfo;
 exports.mergeUserInfo = mergeUserInfo;
 exports.createLog = createLog;
 exports.modifyNickname = modifyNickname;

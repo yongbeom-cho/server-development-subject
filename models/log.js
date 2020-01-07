@@ -7,12 +7,12 @@ module.exports = (sequelize, DataTypes) => (
 			unique: false,
 		},
 		header: {
-			type: DataTypes.STRING,
+			type: DataTypes.TEXT,
 			allowNull: false,
 			unique: false,
 		},
 		body: {
-			type: DataTypes.STRING,
+			type: DataTypes.TEXT,
 			allowNull: false,
 			unique: false,
 		},

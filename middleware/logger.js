@@ -1,3 +1,5 @@
+const sql = require('../sql');
+
 const log = (req, res, next) => {
     
     let req_body = [];
@@ -17,7 +19,7 @@ const log = (req, res, next) => {
     defaultWrite.apply(res, restArgs);
   };
 
-  res.end = (...restArgs) => {
+  res.end = async (...restArgs) => {
       /* response body setting */
     if (restArgs[0]) {
       res_body.push(Buffer.from(restArgs[0]));
@@ -31,7 +33,11 @@ const log = (req, res, next) => {
       /*request header, body setting */
     const { rawHeaders, httpVersion, method, socket, url } = req;
     const { remoteAddress, remoteFamily } = socket;
-    console.log("********************************************");
+    
+    try {
+        await sql.createLog("Request", JSON.stringify(rawHeaders), req_body.toString());
+        await sql.createLog("Response", JSON.stringify(headers), res_body_str);
+      /*
     console.log(
         JSON.stringify({
             header : {
@@ -47,11 +53,14 @@ const log = (req, res, next) => {
             }
         })
     );
-    console.log("********************************************");
+    */
 
-      
-      
-    console.log("********************************************");
+       
+    } catch (error) {
+        console.log("createLog error");
+        console.log(error);
+    }
+    /*
     console.log(
         JSON.stringify({
             response: {
@@ -62,7 +71,7 @@ const log = (req, res, next) => {
             }
         })
     );
-    console.log("********************************************");
+    */
 
     defaultEnd.apply(res, restArgs);
   };
