@@ -1,69 +1,68 @@
-
-function log(req, res, next) {
-	let errorMessage = null;
-  let body = [];
-	req.on("data", chunk => {
-		body.push(chunk);
-	});
-	req.on("end", () => {
-		body = Buffer.concat(body);
-		body = body.toString();
-	});
-	req.on("error", error => {
-		errorMessage = error.message;
-	});
-	
-	res.on("finish", () => {
-		const { rawHeaders, httpVersion, method, socket, url } = req;
-		const { remoteAddress, remoteFamily } = socket;
-		
-		const { statusCode, statusMessage } = res;
-		const headers = res.getHeaders();
-		
-	   	console.log(
-			JSON.stringify({
-				/*timestamp: Date.now(),
-				processingTime: Date.now() - requestStart,
-				rawHeaders,*/
-				body,
-				/*errorMessage,
-				httpVersion,
-				method,
-				remoteAddress,
-				remoteFamily,
-				url,
-				response: {
-					statusCode,
-					statusMessage,
-					headers
-				}*/
-			})
-		);
-		
-		console.log("********************************************");
-		console.log(res);
-	});
-	next();
-};
-
-const endMiddleware = (req, res, next) => {
+const log = (req, res, next) => {
+    
+    let req_body = [];
+    const res_body = [];
+    
+    req.on("data", chunk => {
+        req_body.push(chunk);
+    });
+    
+    
   const defaultWrite = res.write;
   const defaultEnd = res.end;
-  const chunks = [];
+  
 
   res.write = (...restArgs) => {
-    chunks.push(new Buffer(restArgs[0]));
+    res_body.push(Buffer.from(restArgs[0]));
     defaultWrite.apply(res, restArgs);
   };
 
   res.end = (...restArgs) => {
+      /* response body setting */
     if (restArgs[0]) {
-      chunks.push(new Buffer(restArgs[0]));
+      res_body.push(Buffer.from(restArgs[0]));
     }
-    const body = Buffer.concat(chunks).toString('utf8');
-		console.log("##############################################");
-    console.log(body);
-		console.log("##############################################");
+    const res_body_str = Buffer.concat(res_body).toString('utf8');
+      
+      /* response header setting */
+    const { statusCode, statusMessage } = res;
+    const headers = res.getHeaders();
+
+      /*request header, body setting */
+    const { rawHeaders, httpVersion, method, socket, url } = req;
+    const { remoteAddress, remoteFamily } = socket;
+    console.log("********************************************");
+    console.log(
+        JSON.stringify({
+            header : {
+            rawHeaders,
+            httpVersion,
+            method,
+            remoteAddress,
+            remoteFamily,
+            url
+            }, 
+            body : {
+                req_body
+            }
+        })
+    );
+    console.log("********************************************");
+
+      
+      
+    console.log("********************************************");
+    console.log(
+        JSON.stringify({
+            response: {
+                statusCode,
+                statusMessage,
+                headers,
+                res_body_str
+            }
+        })
+    );
+    console.log("********************************************");
 
     defaultEnd.apply(res, restArgs);
   };
@@ -71,9 +70,8 @@ const endMiddleware = (req, res, next) => {
   next();
 };
 exports.log = log;
-exports.endMiddleware = endMiddleware;
 
-/*
+        /*
 RequestHeaders
 
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*\/*;q=0.8,application/signed-exchange;v=b3;q=0.9
@@ -90,6 +88,7 @@ Upgrade-Insecure-Requests: 1
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36
 */
 
+
 /*Request Body 
 {}
 */
@@ -100,27 +99,4 @@ Content-Type: text/html; charset=utf-8
 Date: Mon, 06 Jan 2020 15:24:20 GMT
 ETag: W/"276-ZGU16sXY/ZvappwYLCBfXEf1ks4"
 X-Powered-By: Express
-*/
-
-/* response body
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>카카오 엔터프라이즈 과제</title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-    <meta charset="utf-8" />
-  </head>
-  <body>
- 		<h1>카카오 엔터프라이즈 과제</h1>
- 		<br>
- 		<br>
- 		<a href="https://kauth.kakao.com/oauth/authorize?client_id=6b859aebf0d0964a0f9248653dffbd29&amp;redirect_uri=http://localhost:8080/callback&amp;response_type=code"><button>로그인</button></a>
- 		<br>
-    <!-- 로그인폼 
-    <form action="/login" method="post">
-      <input value="로그인" type="submit" />
-    </form>-->
- 
-  </body>
-</html>
 */
