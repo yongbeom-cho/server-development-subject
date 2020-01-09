@@ -96,35 +96,36 @@ async function deleteUserInfo(app_user_id) {
 };
 
 async function getUserInfo(app_user_id) {
+    var info = null;
     var id, nickname, access_token, refresh_token, created_at;
     try {
-        const userInfo= await UserInfo.findOne({ where: { app_user_id : app_user_id} });
+        const userInfo = await UserInfo.findOne({ where: { app_user_id : app_user_id} });
         if (userInfo) {
             console.log('getUserInfo userInfo count : 1');
+            id = userInfo.dataValues.id;
+            nickname = userInfo.dataValues.nickname;
+            access_token = userInfo.dataValues.access_token;
+            refresh_token = userInfo.dataValues.refresh_token;
+            created_at = userInfo.dataValues.created_at;
+            info = {id : id, app_user_id : app_user_id, nickname : nickname, access_token : access_token, refresh_token : refresh_token, created_at : created_at};
         } else {
             console.log('getUserInfo userInfo count : 0');
         }
-        id = userInfo.dataValues.id;
-        nickname = userInfo.dataValues.nickname;
-        access_token = userInfo.dataValues.access_token;
-        refresh_token = userInfo.dataValues.refresh_token;
-        created_at = userInfo.dataValues.created_at;
-        var info = {id : id, app_user_id : app_user_id, nickname : nickname, access_token : access_token, refresh_token : refresh_token, created_at : created_at};
-        return info;
+        return userInfo;
     } catch (error) {
         console.error('getUserInfo error : ' + error);
         return null;
     }
 };
 
-async function getUsers() {
-    console.log('getUsers');
+async function getUserInfos() {
+    console.log('getUserInfos');
     try {
-        const users= await UserInfo.findAll();
-        console.log('getUsers users count : ' + users.length);
+        const users = await UserInfo.findAll();
+        console.log('getUserInfos users count : ' + users.length);
         return users;
     } catch (error) {
-        console.error('getUsers error : ' + error);
+        console.error('getUserInfos error : ' + error);
         return null;
     }
 }
@@ -191,7 +192,7 @@ exports.modifyNickname = modifyNickname;
 exports.deleteUserInfo = deleteUserInfo;
 
 exports.getUserInfo = getUserInfo;
-exports.getUsers = getUsers;
+exports.getUserInfos = getUserInfos;
 exports.getUserInfosFromNickname = getUserInfosFromNickname;
 exports.getAllLogs = getAllLogs;
 exports.getLogs = getLogs;

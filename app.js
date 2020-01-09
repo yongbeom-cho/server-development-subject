@@ -34,8 +34,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(logger.log);
 
+
 app.use('/', indexRouter);
 app.use('/api', apiRouter);
+
 
 
 // catch 404 and forward to error handler

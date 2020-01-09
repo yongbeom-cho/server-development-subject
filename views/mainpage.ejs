@@ -19,23 +19,20 @@
     
     <br><br><br>
     
-    <!-- 로그아웃폼 -->
     <form action="/logout" method="post">
      	<input name="access_token" value=<%= userinfo.access_token %> type="hidden" />
-      <input value="로그아웃" type="submit" />
+      <input value="logout" type="submit" />
     </form>
     <br>
     
-    <!-- 탈퇴하기폼 -->
     <form action="/leave" method="post">
       <input name="access_token" value=<%= userinfo.access_token %> type="hidden" />
       <input value="탈퇴하기" type="submit" />
     </form>
     <br>
     
-    <!-- 로그폼 -->
     <form action="/log" method="get">
-      <input value="로그" type="submit" />
+      <input value="log" type="submit" />
     </form>
     <br>
  

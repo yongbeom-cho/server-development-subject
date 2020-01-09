@@ -1,5 +1,4 @@
 const express = require('express');
-const sequelize = require('../models').sequelize;
 const sql = require('../sql');
 const request = require("request");
 const router = express.Router();
@@ -23,6 +22,10 @@ router.get('/callback', (req, res) => {
   };
 	
 	request.post("https://kauth.kakao.com/oauth/token", { form : options }, (error, response, body) => {
+        if (error) {
+                console.log("post error occured : https://kauth.kakao.com/oauth/token");
+                res.status(400).send(error);
+        }
 		const json_body = JSON.parse(body);
 		const access_token = json_body.access_token;
 		const refresh_token = json_body.refresh_token;
@@ -36,6 +39,10 @@ router.get('/callback', (req, res) => {
 			}
 		};
 		request.get(me_options, async (error, response, body) => {
+            if (error) {
+                console.log("get error occured : https://kapi.kakao.com/v2/user/me");
+                res.status(400).send(error);
+            }
 			console.log("v2/user/me 정보 ");
 			console.log(body);
 			const user_info = JSON.parse(body);
@@ -49,9 +56,7 @@ router.get('/callback', (req, res) => {
                 });
 			} catch (error) {
 				console.log("createUserInfo or getUserInfo Failed");
-				res.render('index', { link : link }, function(err, html) {
-                    res.end(html);
-                });
+                res.status(400).send(error);
 			}
 		});
   });
@@ -69,6 +74,10 @@ router.post('/leave', (req, res) => {
 		}
 	};
 	request.post(options, async (error, response, body) => {
+        if (error) {
+            console.log("post error occured : https://kapi.kakao.com/v1/user/unlink");
+            res.status(400).send(error);
+        }
 		console.log("v1/user/unlink 정보 ");
 		console.log(body);
 		const json_body = JSON.parse(body);
@@ -77,10 +86,12 @@ router.post('/leave', (req, res) => {
 		try {
 			await sql.deleteUserInfo(app_user_id);
 			console.log("deleteUserInfo Success, app_user_id : "+app_user_id);
+            res.redirect('/');
 		} catch (error) {
 			console.log("deleteUserInfo Failed, app_user_id : "+app_user_id);
+            res.status(400).send(error);
 		}
-		res.redirect('/');
+		
 	});
 });
 
@@ -95,6 +106,10 @@ router.post('/logout', (req, res) => {
 		}
 	};
 	request.post(options, async (error, response, body) => {
+        if (error) {
+            console.log("post error occured : https://kapi.kakao.com/v1/user/logout");
+            res.status(400).send(error);
+        }
 		console.log("v1/user/logout 정보 ");
 		console.log(body);
 		const app_user_id = body.id;
@@ -106,26 +121,34 @@ router.post('/logout', (req, res) => {
 
 router.get('/log', async (req, res) => {
 	console.log("log");
-	const logs = await sql.getAllLogs();
-	res.render('logview', {logs: logs}, function(err, html) {
-        res.end(html);
-    });
+    try {
+        const logs = await sql.getAllLogs();
+        res.render('logview', {logs: logs}, function(err, html) {
+            res.end(html);
+        });
+    } catch (error) {
+        res.status(400).send(error);
+    }
 });
 
 router.post('/log/search', async (req, res) => {
 	var paramSearchContent = req.body.search_content || req.query.search_content;
 	console.log("log search : " + paramSearchContent);
-	if (paramSearchContent === undefined) {
-		const logs = await sql.getAllLogs();
-		res.render('logview', {logs: logs}, function(err, html) {
-            res.end(html);
-        });
-	} else {
-		const logs = await sql.getLogs(paramSearchContent);
-		res.render('logview', {logs: logs}, function(err, html) {
-            res.end(html);
-        });
-	}
+    try {
+        if (paramSearchContent === undefined) {
+            const logs = await sql.getAllLogs();
+            res.render('logview', {logs: logs}, function(err, html) {
+                res.end(html);
+            });
+        } else {
+            const logs = await sql.getLogs(paramSearchContent);
+            res.render('logview', {logs: logs}, function(err, html) {
+                res.end(html);
+            });
+        }
+    } catch (error) {
+        res.status(400).send(error);
+    }
 });
 
 module.exports = router;
