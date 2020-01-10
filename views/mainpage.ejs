@@ -6,35 +6,36 @@
     <meta charset="utf-8" />
   </head>
   <body>
-
-    <h2> 사용자 정보 </h2>
-    <% if (userinfo != null) {%>
-    	<li>id : <%= userinfo.id %></li>
-    	<li>app_user_id : <%= userinfo.app_user_id %></li>
-    	<li>nickname : <%= userinfo.nickname %></li>
-    	<li>access_token : <%= userinfo.access_token %></li>
-    	<li>refresh_token : <%= userinfo.refresh_token %></li>
-    	<li>created_at : <%= userinfo.created_at %></li>
-    <%}%>
-    
-    <br><br>
-    
+   <h1> kakao enterprise subject </h1>
+    <br>
+    <form action="/log" method="get">
+      <input value="로그 보기" type="submit" />
+    </form>
+    <br>
     <form action="/logout" method="post">
      	<input name="access_token" value=<%= userinfo.access_token %> type="hidden" />
       <input value="로그아웃" type="submit" />
     </form>
     <br>
-    
     <form action="/leave" method="post">
       <input name="access_token" value=<%= userinfo.access_token %> type="hidden" />
       <input value="탈퇴하기" type="submit" />
     </form>
     <br>
-    
-    <form action="/log" method="get">
-      <input value="로그 보기" type="submit" />
+    <form action="/userinfo" method="get">
+      <input name="app_user_id" value=<%= userinfo.app_user_id %> type="hidden" />
+      <input value="사용자 정보" type="submit" />
     </form>
     <br>
- 
+    
+    <% if ((userinfo != null) && (show_userinfo == true)) {%>
+    	<h2> 사용자 정보 </h2>
+			<li>id : <%= userinfo.id %></li>
+			<li>app_user_id : <%= userinfo.app_user_id %></li>
+			<li>nickname : <%= userinfo.nickname %></li>
+			<li>access_token : <%= userinfo.access_token %></li>
+			<li>refresh_token : <%= userinfo.refresh_token %></li>
+			<li>created_at : <%= userinfo.created_at %></li>
+    <%}%>
   </body>
 </html>

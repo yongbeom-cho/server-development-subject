@@ -57,7 +57,7 @@ router.get('/callback', (req, res) => {
 			try {
 				await sql.mergeUserInfo(app_user_id, nickname, access_token, refresh_token);
 				const userinfo = await sql.getUserInfo(app_user_id);
-				res.render('mainpage', {userinfo: userinfo}, function(err, html) {
+				res.render('mainpage', {userinfo: userinfo, show_userinfo: false}, function(err, html) {
                     res.end(html);
                 });
 			} catch (error) {
@@ -162,7 +162,7 @@ router.get('/userinfo', async (req, res) => {
 	const { app_user_id } = req.query;
 	try {
 		const userinfo = await sql.getUserInfo(app_user_id);
-		res.render('mainpage', {userinfo: userinfo}, function(err, html) {
+		res.render('mainpage', {userinfo: userinfo, show_userinfo: true}, function(err, html) {
 			res.end(html);
 		});
 	} catch (error) {
