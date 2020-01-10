@@ -6,7 +6,13 @@ const { RESTAPI_KEY } = process.env;
 const link = "https://kauth.kakao.com/oauth/authorize?client_id="+RESTAPI_KEY+"&redirect_uri=http://localhost:8080/callback&response_type=code";
 
 router.get('/', (req, res) => {
-	res.render('index', { link : link }, function(err, html) {
+	res.render('index', function(err, html) {
+		res.end(html);
+	});
+});
+
+router.get('/login', (req, res) => {
+	res.render('login', { link : link }, function(err, html) {
 		res.end(html);
 	});
 });
@@ -15,17 +21,17 @@ router.get('/callback', (req, res) => {
 	const { code } = req.query;
 	console.log("callback, code : " + code);
 	const options = {
-        grant_type: "authorization_code",
-        client_id: RESTAPI_KEY,
-        redirect_uri: "http://localhost:8080/callback",
-        code: code
-  };
+		grant_type: "authorization_code",
+		client_id: RESTAPI_KEY,
+		redirect_uri: "http://localhost:8080/callback",
+		code: code
+	};
 	
 	request.post("https://kauth.kakao.com/oauth/token", { form : options }, (error, response, body) => {
-        if (error) {
-                console.log("post error occured : https://kauth.kakao.com/oauth/token");
-                res.status(400).send(error);
-        }
+		if (error) {
+			console.log("post error occured : https://kauth.kakao.com/oauth/token");
+			res.status(500).send(error);
+		}
 		const json_body = JSON.parse(body);
 		const access_token = json_body.access_token;
 		const refresh_token = json_body.refresh_token;
@@ -39,10 +45,10 @@ router.get('/callback', (req, res) => {
 			}
 		};
 		request.get(me_options, async (error, response, body) => {
-            if (error) {
-                console.log("get error occured : https://kapi.kakao.com/v2/user/me");
-                res.status(400).send(error);
-            }
+			if (error) {
+				console.log("get error occured : https://kapi.kakao.com/v2/user/me");
+				res.status(500).send(error);
+			}
 			console.log("v2/user/me 정보 ");
 			console.log(body);
 			const user_info = JSON.parse(body);
@@ -56,10 +62,10 @@ router.get('/callback', (req, res) => {
                 });
 			} catch (error) {
 				console.log("createUserInfo or getUserInfo Failed");
-                res.status(400).send(error);
+                res.status(500).send(error);
 			}
 		});
-  });
+	});
 });
 
 //탈퇴하기
@@ -74,10 +80,10 @@ router.post('/leave', (req, res) => {
 		}
 	};
 	request.post(options, async (error, response, body) => {
-        if (error) {
-            console.log("post error occured : https://kapi.kakao.com/v1/user/unlink");
-            res.status(400).send(error);
-        }
+		if (error) {
+			console.log("post error occured : https://kapi.kakao.com/v1/user/unlink");
+			res.status(500).send(error);
+		}
 		console.log("v1/user/unlink 정보 ");
 		console.log(body);
 		const json_body = JSON.parse(body);
@@ -86,12 +92,13 @@ router.post('/leave', (req, res) => {
 		try {
 			await sql.deleteUserInfo(app_user_id);
 			console.log("deleteUserInfo Success, app_user_id : "+app_user_id);
-            res.redirect('/');
+			res.render('login', { link : link }, function(err, html) {
+				res.end(html);
+			});
 		} catch (error) {
 			console.log("deleteUserInfo Failed, app_user_id : "+app_user_id);
-            res.status(400).send(error);
-		}
-		
+            res.status(500).send(error);
+		}		
 	});
 });
 
@@ -106,59 +113,66 @@ router.post('/logout', (req, res) => {
 		}
 	};
 	request.post(options, async (error, response, body) => {
-        if (error) {
-            console.log("post error occured : https://kapi.kakao.com/v1/user/logout");
-            res.status(400).send(error);
-        }
+		if (error) {
+			console.log("post error occured : https://kapi.kakao.com/v1/user/logout");
+			res.status(500).send(error);
+		}
 		console.log("v1/user/logout 정보 ");
 		console.log(body);
-		const app_user_id = body.id;
-		res.render('close', {close: true}, function(err, html) {
-            res.end(html);
-        });
+		res.render('close', function(err, html) {
+			res.end(html);
+		});
 	});
 });
 
 router.get('/log', async (req, res) => {
 	console.log("log");
-    try {
+	try {
         const logs = await sql.getAllLogs();
         res.render('logview', {logs: logs}, function(err, html) {
             res.end(html);
         });
     } catch (error) {
-        res.status(400).send(error);
+        res.status(500).send(error);
     }
 });
 
 router.post('/log/search', async (req, res) => {
 	var paramSearchContent = req.body.search_content || req.query.search_content;
 	console.log("log search : " + paramSearchContent);
-    try {
-        if (paramSearchContent === undefined) {
-            const logs = await sql.getAllLogs();
-            res.render('logview', {logs: logs}, function(err, html) {
-                res.end(html);
-            });
-        } else {
-            const logs = await sql.getLogs(paramSearchContent);
-            res.render('logview', {logs: logs}, function(err, html) {
-                res.end(html);
-            });
-        }
-    } catch (error) {
-        res.status(400).send(error);
-    }
+	try {
+		if (paramSearchContent === undefined) {
+			const logs = await sql.getAllLogs();
+			res.render('logview', {logs: logs}, function(err, html) {
+				res.end(html);
+			});
+		} else {
+			const logs = await sql.getLogs(paramSearchContent);
+			res.render('logview', {logs: logs}, function(err, html) {
+				res.end(html);
+			});
+		}
+	} catch (error) {
+		res.status(500).send(error);
+	}
+});
+
+router.get('/userinfo', async (req, res) => {
+	console.log("userinfo");
+	const { app_user_id } = req.query;
+	try {
+		const userinfo = await sql.getUserInfo(app_user_id);
+		res.render('mainpage', {userinfo: userinfo}, function(err, html) {
+			res.end(html);
+		});
+	} catch (error) {
+		res.status(500).send(error);
+	}
 });
 
 module.exports = router;
 
 
-/*
-router.get('/userinfo', (req, res) => {
-	console.log("userinfo");
-	const { app_user_id } = req.query;
-	const userinfo = sql.getUserInfo(app_user_id);	
-	res.render('mainpage', {userinfo: userinfo});
-});
-*/
+
+
+
