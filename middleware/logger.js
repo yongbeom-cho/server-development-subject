@@ -3,7 +3,7 @@ const sql = require('../sql');
 const log = (req, res, next) => {
 	let req_body = [];
 	const res_body = [];
-	
+	/* req body setting */
 	req.on("data", chunk => {
 		req_body.push(chunk);
 	});
@@ -11,23 +11,24 @@ const log = (req, res, next) => {
 	const defaultWrite = res.write;
 	const defaultEnd = res.end;
 	
+	/* res body setting */
 	res.write = (...restArgs) => {
 		res_body.push(Buffer.from(restArgs[0]));
 		defaultWrite.apply(res, restArgs);
 	};
 	
 	res.end = async (...restArgs) => {
-		/* response body setting */
+		/* response header setting */
+		const { statusCode, statusMessage } = res;
+		const headers = res.getHeaders();
+		
+		/* res body setting */
 		if (restArgs[0]) {
 			res_body.push(Buffer.from(restArgs[0]));
 		}
 		const res_body_str = Buffer.concat(res_body).toString('utf8');
 		
-		/* response header setting */
-		const { statusCode, statusMessage } = res;
-		const headers = res.getHeaders();
-		
-		/*request header, body setting */
+		/* request header setting */
 		const { rawHeaders, httpVersion, method, socket, url } = req;
 		const { remoteAddress, remoteFamily } = socket;
 		let str = `${method.toUpperCase()} ${url} HTTP/${httpVersion}\n`;

@@ -17,11 +17,11 @@
     	<li>created_at : <%= userinfo.created_at %></li>
     <%}%>
     
-    <br><br><br>
+    <br><br>
     
     <form action="/logout" method="post">
      	<input name="access_token" value=<%= userinfo.access_token %> type="hidden" />
-      <input value="logout" type="submit" />
+      <input value="로그아웃" type="submit" />
     </form>
     <br>
     
@@ -32,7 +32,7 @@
     <br>
     
     <form action="/log" method="get">
-      <input value="log" type="submit" />
+      <input value="로그 보기" type="submit" />
     </form>
     <br>
  
