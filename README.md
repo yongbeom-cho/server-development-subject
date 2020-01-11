@@ -54,9 +54,12 @@
 		모든 Request(Header, Body), Response (Header, Body)에 대한 로깅
 			1. app.js에서 middleware/logger.js에서 log 함수 middleware로 등록
 			2. log함수에서 res.end() 시 request {headers, body}, response {headers, body} 만들어 RDB에 type (Request or Response), header, body 로 저장.
+
 2. 프로젝트 빌드
 	mysql 설치
-	node js 설치
+	node js 설치(PATH 설정)
+	npm install --save http-errors
+
 3. 실행 방법
 	1. mysql 실행 (root password : asdf1234, PATH 설정)
 	2. ddl 구문 실행 
