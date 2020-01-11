@@ -137,7 +137,7 @@ router.get('/log', async (req, res) => {
     }
 });
 
-router.post('/log/search', async (req, res) => {
+router.get('/log/search', async (req, res) => {
 	var paramSearchContent = req.body.search_content || req.query.search_content;
 	console.log("log search : " + paramSearchContent);
 	try {
