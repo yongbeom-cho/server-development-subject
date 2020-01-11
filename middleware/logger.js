@@ -40,8 +40,6 @@ const log = (req, res, next) => {
 			await sql.createLog("Request", JSON.stringify(str), req_body.toString());
 			await sql.createLog("Response", JSON.stringify(headers), res_body_str);   
 		} catch (error) {
-			console.log("createLog error");
-			console.log(error);
 		}
 		
 		defaultEnd.apply(res, restArgs);

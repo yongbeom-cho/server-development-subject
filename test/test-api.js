@@ -79,7 +79,6 @@ describe('API', function() {
             request.get('http://localhost:8080/api/users', function(error, response, body) {
                 const json_body = JSON.parse(body);
                 const body_length = json_body.length
-                console.log(body_length);
                 expect(json_body[body_length-1].app_user_id).to.equal(app_user_id);
                 expect(json_body[body_length-1].nickname).to.equal(modified_nickname);
                 expect(json_body[body_length-1].access_token).to.equal(access_token);
