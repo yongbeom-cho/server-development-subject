@@ -56,18 +56,18 @@
 			2. log함수에서 res.end() 시 request {headers, body}, response {headers, body} 만들어 RDB에 type (Request or Response), header, body 로 저장.
 
 2. 프로젝트 빌드
-	mysql 설치
+	mysql 설치 (root password : asdf1234, PATH 설정)
 	node js 설치(PATH 설정)
 	npm install --save http-errors
 
 3. 실행 방법
 	1. mysql 실행 (root password : asdf1234, PATH 설정)
-	2. ddl 구문 실행 
+	2. ddl 구문 실행 (ddl.sql)
 		create database kakao;
 	3. 서버 실행
 		git clone 받은 dir에서 "npm start" 쓰고 enter
 	4. 크롬 webbrowser 실행
 		localhost:8080 접속
 	5. unit test 실행
-		git clone 받은 dir에서 "npm test" 쓰고 enter
+		git clone 받은 dir에서 "npm test" 쓰고 enter (서버 실행 후 실행)
 	
